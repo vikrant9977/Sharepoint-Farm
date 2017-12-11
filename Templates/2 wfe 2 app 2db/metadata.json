@@ -1,1 +1,8 @@
 
+{
+
+"itemDisplayName": "Sharepoint Farm",
+
+"description": "Create sharepoint farm with 2 wfe servers, 2 app servers and 2 db servers"
+
+}
