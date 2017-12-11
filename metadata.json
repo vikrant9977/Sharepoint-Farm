@@ -1,7 +1,0 @@
-{
-
-"itemDisplayName": "Sharepoint Farm",
-
-"description": "Create a sharepoint farm with 2 WFE Servers, 2 App Servers and 2 DB Servers in a devtest lab"
-
-}
