@@ -1,1 +1,164 @@
 
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "WFE VM Names": {
+      "type": "array",
+
+      "metadata": {
+        "description": "Please type comma sepearated name of vms to deploy in wfe layer"
+      }
+    },
+    "APPlication VM Names": {
+      "type": "array",
+
+      "metadata": {
+        "description": "Please type comma sepearated name of vms to deploy in application layer"
+      }
+    },
+    "Database VM Names": {
+      "type": "array",
+
+      "metadata": {
+        "description": "Please type comma sepearated name of vms to deploy in Database layer"
+      }
+    },
+    "Availability Set Name For WFE VMs": {
+      "type": "string",
+      "metadata": {
+        "description": "please type the name of availability set for wfe VMs"
+      }
+    },
+    "Load Balancer Name For WFE VMs": {
+      "type": "string",
+      "metadata": {
+        "description": "please type the name of availability set for Application VMs"
+      }
+    },
+    "Admin Username": {
+      "type": "string",
+      "defaultValue": "BPVMADMIN",
+      "allowedValues": [
+        "BPVMADMIN"
+
+      ],
+      "metadata": {
+        "description": "Username for the Virtual Machines."
+      }
+    },
+    "Existing Virtual NetworkName": {
+      "type": "string",
+      "defaultValue": "BPENPGDMPVNAMSTST",
+      "allowedValues": [
+        "BPENPGDMPVNAMSTST"
+
+      ],
+      "metadata": {
+        "description": "The name of virtual network to deploy all resources"
+      }
+    },
+    "Existing Virtual NetworkName ResourceGroup Name": {
+      "type": "string",
+      "defaultValue": "bpenpgdmpvnamstst-Migrated",
+      "allowedValues": [
+        "bpenpgdmpvnamstst-Migrated"
+
+      ],
+      "metadata": {
+        "description": "The name of virtual network to deploy all resources"
+      }
+    },
+
+    "Subnet Name For WFe VMs": {
+      "type": "string",
+      "defaultValue": "DevSPSubnet2",
+      "allowedValues": [
+        "DevSPSubnet2",
+        "TEST-SP-WFE",
+        "TEST-SP-APP",
+        "TEST-SP-DB",
+        "Dev-SP-Servers",
+        "Dev-DB-Servers",
+        "Test-SP-Servers"
+
+
+      ],
+      "metadata": {
+        "description": "The name of subnet in network to deploy wfe vms"
+      }
+    },
+    "Subnet Name For Application VMs": {
+      "type": "string",
+      "defaultValue": "DevSPSubnet2",
+      "allowedValues": [
+        "DevSPSubnet2",
+        "TEST-SP-WFE",
+        "TEST-SP-APP",
+        "TEST-SP-DB",
+        "Dev-SP-Servers",
+        "Dev-DB-Servers",
+        "Test-SP-Servers"
+
+
+      ],
+      "metadata": {
+        "description": "The name of subnet in network to deploy application vms"
+      }
+    },
+
+    "Subnet Name For Database VMs": {
+      "type": "string",
+      "defaultValue": "DevSPSubnet2",
+      "allowedValues": [
+        "DevSPSubnet2",
+        "TEST-SP-WFE",
+        "TEST-SP-APP",
+        "TEST-SP-DB",
+        "Dev-SP-Servers",
+        "Dev-DB-Servers",
+        "Test-SP-Servers"
+
+
+      ],
+      "metadata": {
+        "description": "The name of subnet in network to deploy database vms"
+      }
+    },
+
+    "VM size for Wfe": {
+      "type": "string",
+      "defaultValue": "Standard_A4m_v2",
+      "allowedValues": [
+        "Standard_A4m_v2"
+
+      ],
+      "metadata": {
+        "description": "Vm size for the WFE Virtual Machines"
+      }
+    },
+    "VM size for Application": {
+      "type": "string",
+      "defaultValue": "Standard_A4m_v2",
+      "allowedValues": [
+        "Standard_A4m_v2"
+
+      ],
+      "metadata": {
+        "description": "Vm size for the application Virtual Machines"
+      }
+    },
+    "VM size for Database": {
+      "type": "string",
+      "defaultValue": "Standard_A8m_v2",
+      "allowedValues": [
+        "Standard_A8m_v2"
+
+      ],
+      "metadata": {
+        "description": "Vm size for the Database Virtual Machines"
+      }
+    }
+
+  },
+  }
