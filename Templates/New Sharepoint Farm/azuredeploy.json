@@ -1,1 +1,654 @@
 
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "WFE VM Names": {
+      "type": "array",
+
+      "metadata": {
+        "description": "Please type comma sepearated name of vms to deploy in wfe layer"
+      }
+    },
+    "APPlication VM Names": {
+      "type": "array",
+
+      "metadata": {
+        "description": "Please type comma sepearated name of vms to deploy in application layer"
+      }
+    },
+    "Database VM Names": {
+      "type": "array",
+
+      "metadata": {
+        "description": "Please type comma sepearated name of vms to deploy in Database layer"
+      }
+    },
+    "Availability Set Name For WFE VMs": {
+      "type": "string",
+      "metadata": {
+        "description": "please type the name of availability set for wfe VMs"
+      }
+    },
+    "Load Balancer Name For WFE VMs": {
+      "type": "string",
+      "metadata": {
+        "description": "please type the name of availability set for Application VMs"
+      }
+    },
+    "Admin Username": {
+      "type": "string",
+      "defaultValue": "BPVMADMIN",
+      "allowedValues": [
+        "BPVMADMIN"
+
+      ],
+      "metadata": {
+        "description": "Username for the Virtual Machines."
+      }
+    },
+    "Existing Virtual NetworkName": {
+      "type": "string",
+      "defaultValue": "BPENPGDMPVNAMSTST",
+      "allowedValues": [
+        "BPENPGDMPVNAMSTST"
+
+      ],
+      "metadata": {
+        "description": "The name of virtual network to deploy all resources"
+      }
+    },
+    "Existing Virtual NetworkName ResourceGroup Name": {
+      "type": "string",
+      "defaultValue": "bpenpgdmpvnamstst-Migrated",
+      "allowedValues": [
+        "bpenpgdmpvnamstst-Migrated"
+
+      ],
+      "metadata": {
+        "description": "The name of virtual network to deploy all resources"
+      }
+    },
+
+    "Subnet Name For WFe VMs": {
+      "type": "string",
+      "defaultValue": "DevSPSubnet2",
+      "allowedValues": [
+        "DevSPSubnet2",
+        "TEST-SP-WFE",
+        "TEST-SP-APP",
+        "TEST-SP-DB",
+        "Dev-SP-Servers",
+        "Dev-DB-Servers",
+        "Test-SP-Servers"
+
+
+      ],
+      "metadata": {
+        "description": "The name of subnet in network to deploy wfe vms"
+      }
+    },
+    "Subnet Name For Application VMs": {
+      "type": "string",
+      "defaultValue": "DevSPSubnet2",
+      "allowedValues": [
+        "DevSPSubnet2",
+        "TEST-SP-WFE",
+        "TEST-SP-APP",
+        "TEST-SP-DB",
+        "Dev-SP-Servers",
+        "Dev-DB-Servers",
+        "Test-SP-Servers"
+
+
+      ],
+      "metadata": {
+        "description": "The name of subnet in network to deploy application vms"
+      }
+    },
+
+    "Subnet Name For Database VMs": {
+      "type": "string",
+      "defaultValue": "DevSPSubnet2",
+      "allowedValues": [
+        "DevSPSubnet2",
+        "TEST-SP-WFE",
+        "TEST-SP-APP",
+        "TEST-SP-DB",
+        "Dev-SP-Servers",
+        "Dev-DB-Servers",
+        "Test-SP-Servers"
+
+
+      ],
+      "metadata": {
+        "description": "The name of subnet in network to deploy database vms"
+      }
+    },
+
+    "VM size for Wfe": {
+      "type": "string",
+      "defaultValue": "Standard_A4m_v2",
+      "allowedValues": [
+        "Standard_A4m_v2"
+
+      ],
+      "metadata": {
+        "description": "Vm size for the WFE Virtual Machines"
+      }
+    },
+    "VM size for Application": {
+      "type": "string",
+      "defaultValue": "Standard_A4m_v2",
+      "allowedValues": [
+        "Standard_A4m_v2"
+
+      ],
+      "metadata": {
+        "description": "Vm size for the application Virtual Machines"
+      }
+    },
+    "VM size for Database": {
+      "type": "string",
+      "defaultValue": "Standard_A8m_v2",
+      "allowedValues": [
+        "Standard_A8m_v2"
+
+      ],
+      "metadata": {
+        "description": "Vm size for the Database Virtual Machines"
+      }
+    }
+
+  },
+  "variables": {
+    "vnetId": "[resourceId(parameters('Existing Virtual NetworkName ResourceGroup Name'),'Microsoft.Network/virtualNetworks', parameters('Existing Virtual NetworkName'))]",
+    "subnetRefwfe": "[concat(variables('vnetId'), '/subnets/', parameters('Subnet Name For WFe VMs'))]",
+    "subnetRefapp": "[concat(variables('vnetId'), '/subnets/', parameters('Subnet Name For Application VMs'))]",
+    "subnetRefdb": "[concat(variables('vnetId'), '/subnets/', parameters('Subnet Name For Database VMs'))]",
+    "lbID": "[resourceId('Microsoft.Network/loadBalancers',parameters('Load Balancer Name For WFE VMs'))]",
+    "frontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
+    "lbPoolID": "[concat(variables('lbID'),'/backendAddressPools/BackendPool1')]",
+    "lbProbeID": "[concat(variables('lbID'),'/probes/tcpProbe')]"
+  },
+  "resources": [
+
+    {
+      "name": "NSG-WFE",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2017-10-01",
+      "location": "westeurope",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "default-allow-rdp",
+            "properties": {
+              "priority": 1000,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389"
+            }
+          }
+        ]
+      }
+    },
+
+    {
+      "name": "NSG-App",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2017-10-01",
+      "location": "westeurope",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "default-allow-rdp",
+            "properties": {
+              "priority": 1000,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389"
+            }
+          }
+        ]
+      }
+    },
+
+    {
+      "name": "NSG-DB",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2017-10-01",
+      "location": "westeurope",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "default-allow-rdp",
+            "properties": {
+              "priority": 1000,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389"
+            }
+          }
+        ]
+      }
+    },
+
+
+    {
+
+      "type": "Microsoft.Compute/availabilitySets",
+      "sku": {
+        "name": "Aligned"
+      },
+      "name": "[parameters('Availability Set Name For WFE VMs')]",
+      "apiVersion": "2017-03-30",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2,
+        
+
+      }
+
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(parameters('Load Balancer Name For WFE VMs'),'-IP')]",
+      "location": "westeurope",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[toLower(parameters('Load Balancer Name For WFE VMs'))]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(parameters('APPlication VM Names')[copyIndex()],'-IP')]",
+      "location": "westeurope",
+      "copy": {
+        "name": "appipcopy",
+        "count": "[length(parameters('APPlication VM Names'))]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[toLower(parameters('APPlication VM Names')[copyIndex()])]"
+        }
+      }
+    },
+
+
+    {
+      "apiVersion": "2015-05-01-preview",
+      "name": "[parameters('Load Balancer Name For WFE VMs')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "westeurope",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', concat(parameters('Load Balancer Name For WFE VMs'),'-IP'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "LoadBalancerFrontEnd",
+            "properties": {
+              "publicIPAddress": {
+
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(parameters('Load Balancer Name For WFE VMs'),'-IP') )]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "BackendPool1"
+          }
+        ],
+        "inboundNatRules": [
+
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "LBRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[variables('lbPoolID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "probe": {
+                "id": "[variables('lbProbeID')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "tcpProbe",
+            "properties": {
+              "protocol": "tcp",
+              "port": 80,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+
+
+    {
+      "name": "[concat(parameters('WFE VM Names')[copyIndex()],'-PrimaryNic')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2016-09-01",
+      "location": "westeurope",
+      "copy": {
+        "name": "wfeniccopy",
+        "count": "[length(parameters('WFE VM Names'))]"
+      },
+      "dependsOn": [
+
+        "[concat('Microsoft.Network/networkSecurityGroups/', 'NSG-WFE')]"
+
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnetRefwfe')]"
+
+              },
+              "privateIPAllocationMethod": "Dynamic"
+
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG-WFE')]"
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('APPlication VM Names')[copyIndex()],'-PrimaryNic')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2016-09-01",
+      "location": "westeurope",
+      "copy": {
+        "name": "appniccopy",
+        "count": "[length(parameters('APPlication VM Names'))]"
+      },
+      "dependsOn": [
+
+        "[concat('Microsoft.Network/networkSecurityGroups/', 'NSG-App')]",
+        "[concat('Microsoft.Network/publicIPAddresses/',concat(parameters('APPlication VM Names')[copyIndex()],'-IP'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnetRefapp')]"
+              },
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIpAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(parameters('APPlication VM Names')[copyIndex()],'-IP'))]"
+              }
+
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG-App')]"
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('Database VM Names')[copyIndex()],'-PrimaryNic')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2016-09-01",
+      "location": "westeurope",
+      "copy": {
+        "name": "dbniccopy",
+        "count": "[length(parameters('Database VM Names'))]"
+      },
+      "dependsOn": [
+
+        "[concat('Microsoft.Network/networkSecurityGroups/', 'NSG-DB')]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnetRefdb')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG-DB')]"
+
+        }
+      }
+    },
+
+
+    {
+      "name": "[parameters('WFE VM Names')[copyIndex()]]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "location": "westeurope",
+      "copy": {
+        "name": "wfevmcopy",
+        "count": "[length(parameters('WFE VM Names'))]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('WFE VM Names')[copyIndex()],'-PrimaryNic'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', parameters('Availability Set Name For WFE VMs'))]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('Availability Set Name For WFE VMs'))]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('WFE VM Names')[copyIndex()]]",
+          "adminUsername": "[parameters('Admin Username')]",
+          "adminPassword": "[concat('B@1am$iit',skip(parameters('WFE VM Names')[copyIndex()],9))]",
+          "windowsConfiguration": {
+            "provisionVmAgent": "true"
+          }
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('VM size for Wfe')]"
+        },
+        "storageProfile": {
+
+          "imageReference": {
+            "id": "/subscriptions/64bca64b-e6ee-4d69-ad44-d9a5bdf66edd/resourceGroups/dtl_5324_upstreamtalentandlearningrg702467/providers/Microsoft.Compute/images/Sharepoint2013withdecspcu"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "Standard_LRS"
+            }
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('WFE VM Names')[copyIndex()],'-0-', parameters('WFE VM Names')[copyIndex()])]",
+              "createOption": "Empty",
+              "caching": "None",
+              "managedDisk": {
+                "storageAccountType": "Standard_LRS"
+
+              },
+              "diskSizeGB": 512
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('WFE VM Names')[copyIndex()],'-PrimaryNic'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[parameters('APPlication VM Names')[copyIndex()]]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "location": "westeurope",
+      "copy": {
+        "name": "appvmcopy",
+        "count": "[length(parameters('APPlication VM Names'))]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('APPlication VM Names')[copyIndex()],'-PrimaryNic'))]"
+      ],
+      "properties": {
+
+        "osProfile": {
+          "computerName": "[parameters('APPlication VM Names')[copyIndex()]]",
+          "adminUsername": "[parameters('Admin Username')]",
+          "adminPassword": "[concat('B@1am$apt',skip(parameters('APPlication VM Names')[copyIndex()],9))]",
+          "windowsConfiguration": {
+            "provisionVmAgent": "true"
+          }
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('VM size for Application')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2012-R2-Datacenter",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "Standard_LRS"
+            }
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('APPlication VM Names')[copyIndex()],'-0-', parameters('APPlication VM Names')[copyIndex()])]",
+              "createOption": "Empty",
+              "caching": "None",
+              "managedDisk": {
+                "storageAccountType": "Standard_LRS"
+
+              },
+              "diskSizeGB": 512
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('APPlication VM Names')[copyIndex()],'-PrimaryNic'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[parameters('Database VM Names')[copyIndex()]]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "location": "westeurope",
+      "copy": {
+        "name": "dbvmcopy",
+        "count": "[length(parameters('Database VM Names'))]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('Database VM Names')[copyIndex()],'-PrimaryNic'))]"
+      ],
+      "properties": {
+
+        "osProfile": {
+          "computerName": "[parameters('Database VM Names')[copyIndex()]]",
+          "adminUsername": "[parameters('Admin Username')]",
+          "adminPassword": "[concat('B@1am$dbt',skip(parameters('Database VM Names')[copyIndex()],9))]",
+          "windowsConfiguration": {
+            "provisionVmAgent": "true"
+          }
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('VM size for Database')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2012-R2-Datacenter",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "Standard_LRS"
+            }
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('Database VM Names')[copyIndex()],'-0-', parameters('Database VM Names')[copyIndex()])]",
+              "createOption": "Empty",
+              "caching": "None",
+              "managedDisk": {
+                "storageAccountType": "Standard_LRS"
+
+              },
+              "diskSizeGB": 1023
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('Database VM Names')[copyIndex()],'-PrimaryNic'))]"
+            }
+          ]
+        }
+      }
+    }
+
+
+
+
+
+  ],
+  "outputs": {}
+}
