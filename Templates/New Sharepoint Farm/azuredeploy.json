@@ -368,7 +368,8 @@
       },
       "dependsOn": [
 
-        "[concat('Microsoft.Network/networkSecurityGroups/', 'NSG-WFE')]"
+        "[concat('Microsoft.Network/networkSecurityGroups/', 'NSG-WFE')]",
+        "[concat('Microsoft.Network/loadBalancers/', parameters('Load Balancer Name For WFE VMs'))]"
 
       ],
       "properties": {
