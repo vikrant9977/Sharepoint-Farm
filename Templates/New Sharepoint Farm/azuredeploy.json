@@ -496,10 +496,7 @@
         "storageProfile": {
 
            "imageReference": {
-            "publisher": "MicrosoftWindowsServer",
-            "offer": "WindowsServer",
-            "sku": "2012-R2-Datacenter",
-            "version": "latest"
+            "id": "/subscriptions/64bca64b-e6ee-4d69-ad44-d9a5bdf66edd/resourceGroups/dtl_5324_upstreamtalentandlearningrg702467/providers/Microsoft.Compute/images/Sharepoint2013withdecspcu"
           },
           "osDisk": {
             "createOption": "fromImage",
