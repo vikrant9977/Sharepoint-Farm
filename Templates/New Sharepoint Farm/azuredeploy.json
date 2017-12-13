@@ -29,6 +29,18 @@
         "description": "please type the name of availability set for wfe VMs"
       }
     },
+    "Availability Set Name For Application VMs": {
+      "type": "string",
+      "metadata": {
+        "description": "please type the name of availability set for wfe VMs"
+      }
+    },
+    "Availability Set Name For Database VMs": {
+      "type": "string",
+      "metadata": {
+        "description": "please type the name of availability set for wfe VMs"
+      }
+    },
     "Load Balancer Name For WFE VMs": {
       "type": "string",
       "metadata": {
@@ -252,6 +264,42 @@
         "name": "Aligned"
       },
       "name": "[parameters('Availability Set Name For WFE VMs')]",
+      "apiVersion": "2017-03-30",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2
+
+
+      }
+
+    },
+    {
+
+      "type": "Microsoft.Compute/availabilitySets",
+      "sku": {
+        "name": "Aligned"
+      },
+      "name": "[parameters('Availability Set Name For Application VMs')]",
+      "apiVersion": "2017-03-30",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2
+
+
+      }
+
+    },
+    {
+
+      "type": "Microsoft.Compute/availabilitySets",
+      "sku": {
+        "name": "Aligned"
+      },
+      "name": "[parameters('Availability Set Name For Database VMs')]",
       "apiVersion": "2017-03-30",
       "location": "westeurope",
       "scale": null,
@@ -539,10 +587,13 @@
         "count": "[length(parameters('APPlication VM Names'))]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('APPlication VM Names')[copyIndex()],'-PrimaryNic'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('APPlication VM Names')[copyIndex()],'-PrimaryNic'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', parameters('Availability Set Name For Application VMs'))]"
       ],
       "properties": {
-
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('Availability Set Name For Application VMs'))]"
+        },
         "osProfile": {
           "computerName": "[parameters('APPlication VM Names')[copyIndex()]]",
           "adminUsername": "[parameters('Admin Username')]",
@@ -600,10 +651,13 @@
         "count": "[length(parameters('Database VM Names'))]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('Database VM Names')[copyIndex()],'-PrimaryNic'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('Database VM Names')[copyIndex()],'-PrimaryNic'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', parameters('Availability Set Name For Database VMs'))]"
       ],
       "properties": {
-
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('Availability Set Name For Database VMs'))]"
+        },
         "osProfile": {
           "computerName": "[parameters('Database VM Names')[copyIndex()]]",
           "adminUsername": "[parameters('Admin Username')]",
