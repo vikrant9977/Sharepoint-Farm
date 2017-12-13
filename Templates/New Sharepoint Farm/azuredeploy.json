@@ -257,8 +257,8 @@
       "scale": null,
       "properties": {
         "platformUpdateDomainCount": 5,
-        "platformFaultDomainCount": 2,
-        
+        "platformFaultDomainCount": 2
+
 
       }
 
@@ -476,7 +476,8 @@
       },
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('WFE VM Names')[copyIndex()],'-PrimaryNic'))]",
-        "[concat('Microsoft.Compute/availabilitySets/', parameters('Availability Set Name For WFE VMs'))]"
+        "[concat('Microsoft.Compute/availabilitySets/', parameters('Availability Set Name For WFE VMs'))]",
+        "[concat('Microsoft.Compute/images/', 'Sharepoint2013withdecspcu')]"
       ],
       "properties": {
         "availabilitySet": {
@@ -496,7 +497,7 @@
         "storageProfile": {
 
           "imageReference": {
-            "id": "/subscriptions/64bca64b-e6ee-4d69-ad44-d9a5bdf66edd/resourceGroups/dtl_pass_pocrg028963/providers/Microsoft.Compute/images/Sharepoint2013withdecspcu"
+            "id": "[resourceId('Microsoft.Compute/images','Sharepoint2013withdecspcu')]"
 
           },
           "osDisk": {
@@ -647,6 +648,23 @@
               "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('Database VM Names')[copyIndex()],'-PrimaryNic'))]"
             }
           ]
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-04-26-preview",
+      "type": "Microsoft.Compute/images",
+      "name": "Sharepoint2013withdecspcu",
+      "location": "westeurope",
+      "properties": {
+        "storageProfile": {
+          "osDisk": {
+            "osType": "windows",
+            "blobUri": "https://vhdforimages.blob.core.windows.net/vhds/BP1AMSAPTTRIAL_disk1_0683e5a3d9fd4c93b8a50438348df502.vhd",
+            "caching": "ReadWrite",
+            "storageAccountType": "Standard_LRS"
+          },
+          "dataDisks": []
         }
       }
     }
