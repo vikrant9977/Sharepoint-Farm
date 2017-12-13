@@ -495,8 +495,9 @@
         },
         "storageProfile": {
 
-           "imageReference": {
-            "id": "/subscriptions/64bca64b-e6ee-4d69-ad44-d9a5bdf66edd/resourceGroups/dtl_5324_upstreamtalentandlearningrg702467/providers/Microsoft.Compute/images/Sharepoint2013withdecspcu"
+          "imageReference": {
+            "id": "/subscriptions/64bca64b-e6ee-4d69-ad44-d9a5bdf66edd/resourceGroups/DTL_Pass_PocRG028963/providers/Microsoft.DevTestLab/labs/DTL_Pass_Poc/customimages/Sharepoint2013withdecspcu"
+
           },
           "osDisk": {
             "createOption": "fromImage",
