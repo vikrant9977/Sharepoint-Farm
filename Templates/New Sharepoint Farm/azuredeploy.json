@@ -660,7 +660,7 @@
         "storageProfile": {
           "osDisk": {
             "osType": "windows",
-            "blobUri": "https://vhdforimages.blob.core.windows.net/vhds/BP1AMSAPTTRIAL_disk1_0683e5a3d9fd4c93b8a50438348df502.vhd",
+            "blobUri": "https://adtlpasspoc6107.blob.core.windows.net/uploads/BP1AMSAPTTRIAL_disk1_0683e5a3d9fd4c93b8a50438348df502.vhd",
             "caching": "ReadWrite",
             "storageAccountType": "Standard_LRS"
           },
